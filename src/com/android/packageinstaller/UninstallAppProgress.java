@@ -104,6 +104,7 @@ public class UninstallAppProgress extends Activity implements OnClickListener {
                     switch (msg.arg1) {
                         case PackageManager.DELETE_SUCCEEDED:
                             statusText = getString(R.string.uninstall_done);
+                            sendBroadUninstall();
                             // Show a Toast and finish the activity
                             Context ctx = getBaseContext();
                             Toast.makeText(ctx, statusText, Toast.LENGTH_LONG).show();
@@ -267,5 +268,12 @@ public class UninstallAppProgress extends Activity implements OnClickListener {
             }
         }
         return super.dispatchKeyEvent(ev);
+    }
+
+    public void sendBroadUninstall() {
+        Intent intent = new Intent();
+        intent.putExtra(Intent.EXTRA_KEY_UNINSTALL_APK, mAppInfo.packageName);
+        intent.setAction(Intent.STATUS_BAR_UNINSTALL_APK);
+        sendBroadcast(intent);
     }
 }
