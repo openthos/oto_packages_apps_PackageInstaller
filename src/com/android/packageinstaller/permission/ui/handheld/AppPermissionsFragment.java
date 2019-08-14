@@ -45,6 +45,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Switch;
 import android.widget.Toast;
+import android.content.ContentResolver;
+import android.provider.Settings.Global;
 
 import com.android.packageinstaller.R;
 import com.android.packageinstaller.permission.model.AppPermissionGroup;
@@ -63,6 +65,14 @@ public final class AppPermissionsFragment extends SettingsWithHeader
         implements OnPreferenceChangeListener {
 
     private static final String LOG_TAG = "ManagePermsFragment";
+
+    private static final String VIR_CAMERA = "vir_camera";
+    private static final String PHY_CAMERA = "phy_camera";
+    private static final String CAMERA = ".permission.camera";
+
+    private static final String VIR_AUDIO = "vir_audio";
+    private static final String PHY_AUDIO = "phy_audio";
+    private static final String AUDIO = ".permission.audio";
 
     static final String EXTRA_HIDE_INFO_BUTTON = "hideInfoButton";
 
@@ -304,8 +314,19 @@ public final class AppPermissionsFragment extends SettingsWithHeader
             LocationUtils.showLocationDialog(getContext(), mAppPermissions.getAppLabel());
             return false;
         }
+        ContentResolver resolver = getContext().getContentResolver();
+        String packageName = group.getApp().packageName;
+
         if (newValue == Boolean.TRUE) {
             group.grantRuntimePermissions(false);
+            if (group.getName().equals("android.permission-group.CAMERA")) {
+                Settings.Global.putString(resolver, packageName + CAMERA, PHY_CAMERA);
+            }
+
+            if (group.getName().equals("android.permission-group.MICROPHONE")) {
+                Settings.Global.putString(resolver, packageName + AUDIO, PHY_AUDIO);
+            }
+
         } else {
             final boolean grantedByDefault = group.hasGrantedByDefaultPermission();
             if (grantedByDefault || (!group.doesSupportRuntimePermissions()
@@ -326,6 +347,12 @@ public final class AppPermissionsFragment extends SettingsWithHeader
                                     group.getName())) {
                                 updateSummaryForIndividuallyControlledPermissionGroup(
                                         group, preference);
+                            }
+                            if (group.getName().equals("android.permission-group.CAMERA")) {
+                                Settings.Global.putString(resolver, packageName + CAMERA, VIR_CAMERA);
+                            }
+                            if (group.getName().equals("android.permission-group.MICROPHONE")) {
+                                Settings.Global.putString(resolver, packageName + AUDIO, VIR_AUDIO);
                             }
                             if (!grantedByDefault) {
                                 mHasConfirmedRevoke = true;
@@ -409,6 +436,17 @@ public final class AppPermissionsFragment extends SettingsWithHeader
                 SwitchPreference switchPref = (SwitchPreference) preference;
                 AppPermissionGroup group = mAppPermissions.getPermissionGroup(switchPref.getKey());
                 if (group != null) {
+                    String packageName = group.getApp().packageName;
+                    ContentResolver resolver = getContext().getContentResolver();
+                    if ((group.getName().equals("android.permission-group.CAMERA")
+                                && (Global.getString(resolver, packageName + CAMERA) != null)
+                                && Global.getString(resolver, packageName + CAMERA).equals(VIR_CAMERA))
+                            || (group.getName().equals("android.permission-group.MICROPHONE")
+                                && (Global.getString(resolver, packageName + AUDIO) != null)
+                                && Global.getString(resolver, packageName + AUDIO).equals(VIR_AUDIO))) {
+                        switchPref.setChecked(false);
+                        continue;
+                    }
                     switchPref.setChecked(group.areRuntimePermissionsGranted());
                 }
             }
