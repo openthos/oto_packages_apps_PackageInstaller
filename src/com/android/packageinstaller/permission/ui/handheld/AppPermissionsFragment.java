@@ -74,6 +74,10 @@ public final class AppPermissionsFragment extends SettingsWithHeader
     private static final String PHY_AUDIO = "phy_audio";
     private static final String AUDIO = ".permission.audio";
 
+    private static final String VIR_LOCATION = "vir_location";
+    private static final String PHY_LOCATION = "phy_location";
+    private static final String LOCATION = ".permission.location";
+
     static final String EXTRA_HIDE_INFO_BUTTON = "hideInfoButton";
 
     private static final int MENU_ALL_PERMS = 0;
@@ -322,11 +326,12 @@ public final class AppPermissionsFragment extends SettingsWithHeader
             if (group.getName().equals("android.permission-group.CAMERA")) {
                 Settings.Global.putString(resolver, packageName + CAMERA, PHY_CAMERA);
             }
-
+            if (group.getName().equals("android.permission-group.LOCATION")) {
+                Settings.Global.putString(resolver, packageName + LOCATION, PHY_LOCATION);
+            }
             if (group.getName().equals("android.permission-group.MICROPHONE")) {
                 Settings.Global.putString(resolver, packageName + AUDIO, PHY_AUDIO);
             }
-
         } else {
             final boolean grantedByDefault = group.hasGrantedByDefaultPermission();
             if (grantedByDefault || (!group.doesSupportRuntimePermissions()
@@ -350,6 +355,9 @@ public final class AppPermissionsFragment extends SettingsWithHeader
                             }
                             if (group.getName().equals("android.permission-group.CAMERA")) {
                                 Settings.Global.putString(resolver, packageName + CAMERA, VIR_CAMERA);
+                            }
+                            if (group.getName().equals("android.permission-group.LOCATION")) {
+                                Settings.Global.putString(resolver, packageName + LOCATION, VIR_LOCATION);
                             }
                             if (group.getName().equals("android.permission-group.MICROPHONE")) {
                                 Settings.Global.putString(resolver, packageName + AUDIO, VIR_AUDIO);
@@ -443,7 +451,10 @@ public final class AppPermissionsFragment extends SettingsWithHeader
                                 && Global.getString(resolver, packageName + CAMERA).equals(VIR_CAMERA))
                             || (group.getName().equals("android.permission-group.MICROPHONE")
                                 && (Global.getString(resolver, packageName + AUDIO) != null)
-                                && Global.getString(resolver, packageName + AUDIO).equals(VIR_AUDIO))) {
+                                && Global.getString(resolver, packageName + AUDIO).equals(VIR_AUDIO))
+                            || (group.getName().equals("android.permission-group.LOCATION")
+                                && (Global.getString(resolver, packageName + LOCATION) != null)
+                                && Global.getString(resolver, packageName + LOCATION).equals(VIR_LOCATION))) {
                         switchPref.setChecked(false);
                         continue;
                     }
