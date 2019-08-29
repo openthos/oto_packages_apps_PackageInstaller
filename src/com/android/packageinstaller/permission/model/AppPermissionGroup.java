@@ -24,6 +24,7 @@ import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
+import android.Manifest;
 import android.os.Build;
 import android.os.Process;
 import android.os.UserHandle;
@@ -450,6 +451,15 @@ public final class AppPermissionGroup implements Comparable<AppPermissionGroup> 
                 // Do not touch permissions fixed by the system.
                 if (permission.isSystemFixed()) {
                     return false;
+                }
+
+                String permName = permission.getName();
+                if (permName.equals(Manifest.permission.ACCESS_FINE_LOCATION)
+                        || permName.equals(Manifest.permission.CAMERA)
+                        || permName.equals(Manifest.permission.RECORD_AUDIO)) {
+                    mPackageManager.grantRuntimeVirPermission(mPackageInfo.packageName,
+                            permission.getName(), mUserHandle);
+                    return true;
                 }
 
                 // Revoke the permission if needed.
